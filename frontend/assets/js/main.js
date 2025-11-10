@@ -1,6 +1,6 @@
 /**
  * Main JavaScript File
- * Common functionality for all pages
+ * Common functionality for all pages - Now with API integration
  */
 
 // Mobile menu toggle
@@ -53,28 +53,54 @@ function showToast(message, type = 'info') {
 }
 
 /**
- * Update cart count in header
+ * Update cart count in header using API
  */
-function updateCartCount() {
+async function updateCartCount() {
     const cartCount = document.getElementById('cartCount');
     if (cartCount) {
-        cartCount.textContent = storage.getCartCount();
+        try {
+            const response = await fetch(`${API_CONFIG.BASE_URL}/cart`, {
+                method: 'GET',
+                headers: API_CONFIG.getHeaders()
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                cartCount.textContent = result.data.count || 0;
+            } else {
+                cartCount.textContent = '0';
+            }
+        } catch (error) {
+            console.error('Error updating cart count:', error);
+            cartCount.textContent = '0';
+        }
     }
 }
 
 /**
- * Add item to cart
+ * Add item to cart using API
  * @param {number} bookId - Book ID
  * @param {number} quantity - Quantity to add
  */
-function addToCart(bookId, quantity = 1) {
-    const result = storage.addToCart(bookId, quantity);
-    
-    if (result.success) {
-        showToast('Item added to cart!', 'success');
-        updateCartCount();
-    } else {
-        showToast(result.message || 'Failed to add to cart', 'error');
+async function addToCart(bookId, quantity = 1) {
+    try {
+        const response = await fetch(`${API_CONFIG.BASE_URL}/cart/add`, {
+            method: 'POST',
+            headers: API_CONFIG.getHeaders(),
+            body: JSON.stringify({ bookId, quantity })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showToast('Item added to cart!', 'success');
+            updateCartCount();
+        } else {
+            showToast(result.message || 'Failed to add to cart', 'error');
+        }
+    } catch (error) {
+        console.error('Error adding to cart:', error);
+        showToast('Error adding to cart. Please try again.', 'error');
     }
 }
 
