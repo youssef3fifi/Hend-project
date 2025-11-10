@@ -121,74 +121,100 @@
         </div>
     </footer>
     
-    <script src="assets/js/storage.js"></script>
+    <script src="config.js"></script>
     <script src="assets/js/main.js"></script>
     <script>
         // Set current year
         document.getElementById('currentYear').textContent = new Date().getFullYear();
         
         // Load categories
-        function loadCategories() {
-            const categories = storage.getAllCategories();
+        async function loadCategories() {
             const grid = document.getElementById('categoriesGrid');
             
-            if (categories && categories.length > 0) {
-                // Get book count for each category
-                const categoriesWithCount = categories.map(category => {
-                    const count = storage.getAllBooks().filter(book => book.category === category.name).length;
-                    return { ...category, book_count: count };
+            try {
+                // Fetch categories
+                const categoriesResponse = await fetch(`${API_CONFIG.BASE_URL}/categories`, {
+                    headers: API_CONFIG.getHeaders()
                 });
+                const categoriesResult = await categoriesResponse.json();
                 
-                grid.innerHTML = categoriesWithCount.map(category => `
-                    <div class="category-card" onclick="window.location.href='pages/shop.html?category=${encodeURIComponent(category.name)}'">
-                        <i class="fas fa-book"></i>
-                        <h3>${category.name}</h3>
-                        <p class="book-count">${category.book_count} books</p>
-                    </div>
-                `).join('');
-            } else {
-                showEmptyState(grid, 'No categories available');
+                // Fetch books to count per category
+                const booksResponse = await fetch(`${API_CONFIG.BASE_URL}/books`, {
+                    headers: API_CONFIG.getHeaders()
+                });
+                const booksResult = await booksResponse.json();
+                
+                if (categoriesResult.success && categoriesResult.data.length > 0) {
+                    const books = booksResult.data || [];
+                    const categoriesWithCount = categoriesResult.data.map(category => {
+                        const count = books.filter(book => book.category === category.name).length;
+                        return { ...category, book_count: count };
+                    });
+                    
+                    grid.innerHTML = categoriesWithCount.map(category => `
+                        <div class="category-card" onclick="window.location.href='pages/shop.html?category=${encodeURIComponent(category.name)}'">
+                            <i class="fas fa-book"></i>
+                            <h3>${category.name}</h3>
+                            <p class="book-count">${category.book_count} books</p>
+                        </div>
+                    `).join('');
+                } else {
+                    showEmptyState(grid, 'No categories available');
+                }
+            } catch (error) {
+                console.error('Error loading categories:', error);
+                showEmptyState(grid, 'Error loading categories');
             }
         }
 
         // Load featured books
-        function loadFeaturedBooks() {
-            const books = storage.getAllBooks();
+        async function loadFeaturedBooks() {
             const grid = document.getElementById('featuredBooksGrid');
+            showLoading(grid);
             
-            if (books && books.length > 0) {
-                // Display first 8 books
-                const featuredBooks = books.slice(0, 8);
-                grid.innerHTML = featuredBooks.map(book => `
-                    <div class="book-card">
-                        <div class="book-card-image">
-                            <img src="${book.image || 'https://via.placeholder.com/300x400?text=No+Image'}" 
-                                 alt="${book.title}" 
-                                 onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'">
-                        </div>
-                        <div class="book-card-content">
-                            <h3 class="book-card-title">
-                                <a href="pages/book-details.html?id=${book.id}">${book.title}</a>
-                            </h3>
-                            <p class="book-card-author">${book.author}</p>
-                            <div class="book-card-rating">
-                                <span class="stars">${generateStars(book.rating)}</span>
-                                <span>${book.rating}</span>
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/books`, {
+                    headers: API_CONFIG.getHeaders()
+                });
+                const result = await response.json();
+                
+                if (result.success && result.data.length > 0) {
+                    // Display first 8 books
+                    const featuredBooks = result.data.slice(0, 8);
+                    grid.innerHTML = featuredBooks.map(book => `
+                        <div class="book-card">
+                            <div class="book-card-image">
+                                <img src="${book.image || 'https://via.placeholder.com/300x400?text=No+Image'}" 
+                                     alt="${book.title}" 
+                                     onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'">
                             </div>
-                            <div class="book-card-footer">
-                                <span class="book-card-price">${formatPrice(book.price)}</span>
-                                ${getStockBadge(book.stock)}
+                            <div class="book-card-content">
+                                <h3 class="book-card-title">
+                                    <a href="pages/book-details.html?id=${book.id}">${book.title}</a>
+                                </h3>
+                                <p class="book-card-author">${book.author}</p>
+                                <div class="book-card-rating">
+                                    <span class="stars">${generateStars(book.rating)}</span>
+                                    <span>${book.rating}</span>
+                                </div>
+                                <div class="book-card-footer">
+                                    <span class="book-card-price">${formatPrice(book.price)}</span>
+                                    ${getStockBadge(book.stock)}
+                                </div>
+                                <button class="btn btn-primary btn-block mt-2" 
+                                        onclick="addToCart(${book.id})"
+                                        ${book.stock === 0 ? 'disabled' : ''}>
+                                    <i class="fas fa-shopping-cart"></i> Add to Cart
+                                </button>
                             </div>
-                            <button class="btn btn-primary btn-block mt-2" 
-                                    onclick="addToCart(${book.id})"
-                                    ${book.stock === 0 ? 'disabled' : ''}>
-                                <i class="fas fa-shopping-cart"></i> Add to Cart
-                            </button>
                         </div>
-                    </div>
-                `).join('');
-            } else {
-                showEmptyState(grid, 'No books available');
+                    `).join('');
+                } else {
+                    showEmptyState(grid, 'No books available');
+                }
+            } catch (error) {
+                console.error('Error loading featured books:', error);
+                showEmptyState(grid, 'Error loading books');
             }
         }
 
