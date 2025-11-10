@@ -158,73 +158,110 @@
         </div>
     </footer>
     
-    <script src="../../assets/js/storage.js"></script>
+    <script src="../../config.js"></script>
     <script src="../../assets/js/main.js"></script>
     <script>
         // Set current year
         document.getElementById('currentYear').textContent = new Date().getFullYear();
         
         // Load dashboard stats
-        function loadStats() {
-            const books = storage.getAllBooks();
-            const categories = storage.getAllCategories();
-            
-            document.getElementById('totalBooks').textContent = books.length;
-            document.getElementById('totalCategories').textContent = categories.length;
-            
-            const totalStock = books.reduce((sum, book) => sum + book.stock, 0);
-            document.getElementById('totalStock').textContent = totalStock;
+        async function loadStats() {
+            try {
+                const [booksResponse, categoriesResponse] = await Promise.all([
+                    fetch(`${API_CONFIG.BASE_URL}/books`, { headers: API_CONFIG.getHeaders() }),
+                    fetch(`${API_CONFIG.BASE_URL}/categories`, { headers: API_CONFIG.getHeaders() })
+                ]);
+                
+                const booksResult = await booksResponse.json();
+                const categoriesResult = await categoriesResponse.json();
+                
+                if (booksResult.success) {
+                    const books = booksResult.data;
+                    document.getElementById('totalBooks').textContent = books.length;
+                    
+                    const totalStock = books.reduce((sum, book) => sum + book.stock, 0);
+                    document.getElementById('totalStock').textContent = totalStock;
+                }
+                
+                if (categoriesResult.success) {
+                    document.getElementById('totalCategories').textContent = categoriesResult.data.length;
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+                showToast('Error loading stats', 'error');
+            }
         }
         
         // Load books table
-        function loadBooksTable() {
-            const books = storage.getAllBooks();
+        async function loadBooksTable() {
             const tbody = document.getElementById('booksTable');
+            tbody.innerHTML = '<tr><td colspan="7" style="padding: 2rem; text-align: center;">Loading...</td></tr>';
             
-            if (books && books.length > 0) {
-                tbody.innerHTML = books.map(book => `
-                    <tr style="border-bottom: 1px solid var(--border-color);">
-                        <td style="padding: 1rem;">${book.id}</td>
-                        <td style="padding: 1rem;">${book.title}</td>
-                        <td style="padding: 1rem;">${book.author}</td>
-                        <td style="padding: 1rem;">${book.category}</td>
-                        <td style="padding: 1rem;">${formatPrice(book.price)}</td>
-                        <td style="padding: 1rem;">${book.stock}</td>
-                        <td style="padding: 1rem;">
-                            <button class="btn btn-sm" onclick="editBook(${book.id})" style="margin-right: 0.5rem;">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteBook(${book.id})">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `).join('');
-            } else {
-                tbody.innerHTML = '<tr><td colspan="7" style="padding: 2rem; text-align: center;">No books found</td></tr>';
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/books`, {
+                    headers: API_CONFIG.getHeaders()
+                });
+                const result = await response.json();
+                
+                if (result.success && result.data.length > 0) {
+                    const books = result.data;
+                    tbody.innerHTML = books.map(book => `
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 1rem;">${book.id}</td>
+                            <td style="padding: 1rem;">${book.title}</td>
+                            <td style="padding: 1rem;">${book.author}</td>
+                            <td style="padding: 1rem;">${book.category}</td>
+                            <td style="padding: 1rem;">${formatPrice(book.price)}</td>
+                            <td style="padding: 1rem;">${book.stock}</td>
+                            <td style="padding: 1rem;">
+                                <button class="btn btn-sm" onclick="editBook(${book.id})" style="margin-right: 0.5rem;">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteBook(${book.id})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="7" style="padding: 2rem; text-align: center;">No books found</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error loading books:', error);
+                tbody.innerHTML = '<tr><td colspan="7" style="padding: 2rem; text-align: center;">Error loading books</td></tr>';
             }
         }
         
         // Show add book modal
         function showAddBookModal() {
-            showToast('Add book feature: Use browser console or modify storage.js directly', 'info');
+            showToast('Add book feature: Use API endpoint POST /api/books', 'info');
         }
         
         // Edit book
         function editBook(bookId) {
-            showToast('Edit book feature: Use browser console or modify storage.js directly', 'info');
+            showToast('Edit book feature: Use API endpoint PUT /api/books/' + bookId, 'info');
         }
         
         // Delete book
-        function deleteBook(bookId) {
+        async function deleteBook(bookId) {
             if (!confirm('Are you sure you want to delete this book?')) return;
             
-            const result = storage.deleteBook(bookId);
-            if (result) {
-                showToast('Book deleted successfully', 'success');
-                loadStats();
-                loadBooksTable();
-            } else {
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/books/${bookId}`, {
+                    method: 'DELETE',
+                    headers: API_CONFIG.getHeaders()
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    showToast('Book deleted successfully', 'success');
+                    loadStats();
+                    loadBooksTable();
+                } else {
+                    showToast(result.message || 'Failed to delete book', 'error');
+                }
+            } catch (error) {
+                console.error('Error deleting book:', error);
                 showToast('Failed to delete book', 'error');
             }
         }

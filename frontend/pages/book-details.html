@@ -111,7 +111,7 @@
         </div>
     </footer>
     
-    <script src="../assets/js/storage.js"></script>
+    <script src="../config.js"></script>
     <script src="../assets/js/main.js"></script>
     <script>
         // Set current year
@@ -122,101 +122,121 @@
         const bookId = parseInt(urlParams.get('id'));
 
         // Load book details
-        function loadBookDetails() {
-            const book = storage.getBookById(bookId);
+        async function loadBookDetails() {
             const container = document.getElementById('bookDetails');
+            showLoading(container);
             
-            if (book) {
-                // Update breadcrumb
-                document.getElementById('breadcrumbTitle').textContent = book.title;
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/books/${bookId}`, {
+                    headers: API_CONFIG.getHeaders()
+                });
+                const result = await response.json();
                 
-                container.innerHTML = `
-                    <div class="book-details">
-                        <div>
-                            <img src="${book.image || 'https://via.placeholder.com/400x600?text=No+Image'}" 
-                                 alt="${book.title}" 
-                                 class="book-details-image"
-                                 onerror="this.src='https://via.placeholder.com/400x600?text=No+Image'">
+                if (result.success && result.data) {
+                    const book = result.data;
+                    
+                    // Update breadcrumb
+                    document.getElementById('breadcrumbTitle').textContent = book.title;
+                    
+                    container.innerHTML = `
+                        <div class="book-details">
+                            <div>
+                                <img src="${book.image || 'https://via.placeholder.com/400x600?text=No+Image'}" 
+                                     alt="${book.title}" 
+                                     class="book-details-image"
+                                     onerror="this.src='https://via.placeholder.com/400x600?text=No+Image'">
+                            </div>
+                            <div class="book-details-info">
+                                <h1>${book.title}</h1>
+                                <div class="book-details-meta">
+                                    <p><strong>Author:</strong> ${book.author}</p>
+                                    <p><strong>Category:</strong> ${book.category || 'Uncategorized'}</p>
+                                    <p><strong>ISBN:</strong> ${book.isbn || 'N/A'}</p>
+                                    <p><strong>Rating:</strong> 
+                                        <span class="stars">${generateStars(book.rating)}</span>
+                                        ${book.rating}/5.0
+                                    </p>
+                                    <p><strong>Availability:</strong> ${getStockBadge(book.stock)}</p>
+                                </div>
+                                <div class="book-details-price">${formatPrice(book.price)}</div>
+                                <div class="book-details-description">
+                                    <h3>Description</h3>
+                                    <p>${book.description || 'No description available.'}</p>
+                                </div>
+                                <div class="book-details-actions">
+                                    <button class="btn btn-success" 
+                                            onclick="addToCart(${book.id})"
+                                            ${book.stock === 0 ? 'disabled' : ''}>
+                                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                                    </button>
+                                    <button class="btn btn-outline" onclick="window.history.back()">
+                                        <i class="fas fa-arrow-left"></i> Back
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div class="book-details-info">
-                            <h1>${book.title}</h1>
-                            <div class="book-details-meta">
-                                <p><strong>Author:</strong> ${book.author}</p>
-                                <p><strong>Category:</strong> ${book.category || 'Uncategorized'}</p>
-                                <p><strong>ISBN:</strong> ${book.isbn || 'N/A'}</p>
-                                <p><strong>Rating:</strong> 
-                                    <span class="stars">${generateStars(book.rating)}</span>
-                                    ${book.rating}/5.0
-                                </p>
-                                <p><strong>Availability:</strong> ${getStockBadge(book.stock)}</p>
-                            </div>
-                            <div class="book-details-price">${formatPrice(book.price)}</div>
-                            <div class="book-details-description">
-                                <h3>Description</h3>
-                                <p>${book.description || 'No description available.'}</p>
-                            </div>
-                            <div class="book-details-actions">
-                                <button class="btn btn-success" 
-                                        onclick="addToCart(${book.id})"
-                                        ${book.stock === 0 ? 'disabled' : ''}>
-                                    <i class="fas fa-shopping-cart"></i> Add to Cart
-                                </button>
-                                <button class="btn btn-outline" onclick="window.history.back()">
-                                    <i class="fas fa-arrow-left"></i> Back
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                // Load related books from the same category
-                if (book.category) {
-                    loadRelatedBooks(book.category, book.id);
+                    `;
+                    
+                    // Load related books from the same category
+                    if (book.category) {
+                        loadRelatedBooks(book.category, book.id);
+                    }
+                } else {
+                    container.innerHTML = '<div class="empty-state"><h3>Book not found</h3></div>';
                 }
-            } else {
-                container.innerHTML = '<div class="empty-state"><h3>Book not found</h3></div>';
+            } catch (error) {
+                console.error('Error loading book details:', error);
+                container.innerHTML = '<div class="empty-state"><h3>Error loading book details</h3></div>';
             }
         }
 
         // Load related books
-        function loadRelatedBooks(category, excludeBookId) {
-            const books = storage.filterByCategory(category);
+        async function loadRelatedBooks(category, excludeBookId) {
             const container = document.getElementById('relatedBooks');
             
-            if (books && books.length > 0) {
-                // Filter out current book and limit to 4
-                const relatedBooks = books.filter(book => book.id !== excludeBookId).slice(0, 4);
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/books?category=${encodeURIComponent(category)}`, {
+                    headers: API_CONFIG.getHeaders()
+                });
+                const result = await response.json();
                 
-                if (relatedBooks.length > 0) {
-                    container.innerHTML = relatedBooks.map(book => `
-                        <div class="book-card">
-                            <div class="book-card-image">
-                                <img src="${book.image || 'https://via.placeholder.com/300x400?text=No+Image'}" 
-                                     alt="${book.title}"
-                                     onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'">
-                            </div>
-                            <div class="book-card-content">
-                                <h3 class="book-card-title">
-                                    <a href="book-details.html?id=${book.id}">${book.title}</a>
-                                </h3>
-                                <p class="book-card-author">${book.author}</p>
-                                <div class="book-card-rating">
-                                    <span class="stars">${generateStars(book.rating)}</span>
-                                    <span>${book.rating}</span>
+                if (result.success && result.data.length > 0) {
+                    // Filter out current book and limit to 4
+                    const relatedBooks = result.data.filter(book => book.id !== excludeBookId).slice(0, 4);
+                    
+                    if (relatedBooks.length > 0) {
+                        container.innerHTML = relatedBooks.map(book => `
+                            <div class="book-card">
+                                <div class="book-card-image">
+                                    <img src="${book.image || 'https://via.placeholder.com/300x400?text=No+Image'}" 
+                                         alt="${book.title}"
+                                         onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'">
                                 </div>
-                                <div class="book-card-footer">
-                                    <span class="book-card-price">${formatPrice(book.price)}</span>
-                                    ${getStockBadge(book.stock)}
+                                <div class="book-card-content">
+                                    <h3 class="book-card-title">
+                                        <a href="book-details.html?id=${book.id}">${book.title}</a>
+                                    </h3>
+                                    <p class="book-card-author">${book.author}</p>
+                                    <div class="book-card-rating">
+                                        <span class="stars">${generateStars(book.rating)}</span>
+                                        <span>${book.rating}</span>
+                                    </div>
+                                    <div class="book-card-footer">
+                                        <span class="book-card-price">${formatPrice(book.price)}</span>
+                                        ${getStockBadge(book.stock)}
+                                    </div>
+                                    <button class="btn btn-primary btn-block mt-2" 
+                                            onclick="addToCart(${book.id})"
+                                            ${book.stock === 0 ? 'disabled' : ''}>
+                                        <i class="fas fa-shopping-cart"></i> Add to Cart
+                                    </button>
                                 </div>
-                                <button class="btn btn-primary btn-block mt-2" 
-                                        onclick="addToCart(${book.id})"
-                                        ${book.stock === 0 ? 'disabled' : ''}>
-                                    <i class="fas fa-shopping-cart"></i> Add to Cart
-                                </button>
                             </div>
-                        </div>
-                    `).join('');
+                        `).join('');
+                    }
                 }
+            } catch (error) {
+                console.error('Error loading related books:', error);
             }
         }
 

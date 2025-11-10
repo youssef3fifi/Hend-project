@@ -137,7 +137,7 @@
         }
     </style>
     
-    <script src="../assets/js/storage.js"></script>
+    <script src="../config.js"></script>
     <script src="../assets/js/main.js"></script>
     <script>
         // Set current year
@@ -146,61 +146,72 @@
         let cartData = null;
 
         // Load cart
-        function loadCart() {
-            const cart = storage.getCart();
+        async function loadCart() {
             const container = document.getElementById('cartItems');
             const summary = document.getElementById('cartSummary');
+            showLoading(container);
             
-            if (cart && cart.length > 0) {
-                cartData = cart;
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/cart`, {
+                    headers: API_CONFIG.getHeaders()
+                });
+                const result = await response.json();
                 
-                container.innerHTML = cart.map(item => `
-                    <div class="cart-item" data-book-id="${item.bookId}">
-                        <img src="${item.book.image || 'https://via.placeholder.com/100x140?text=No+Image'}" 
-                             alt="${item.book.title}" 
-                             class="cart-item-image"
-                             onerror="this.src='https://via.placeholder.com/100x140?text=No+Image'">
-                        <div class="cart-item-details">
-                            <h3 class="cart-item-title">
-                                <a href="book-details.html?id=${item.bookId}">${item.book.title}</a>
-                            </h3>
-                            <p class="cart-item-author">${item.book.author}</p>
-                            <p class="cart-item-price">${formatPrice(item.book.price)} each</p>
-                            <div class="cart-item-actions">
-                                <div class="quantity-control">
-                                    <button onclick="updateQuantity(${item.bookId}, ${item.quantity - 1})" 
-                                            aria-label="Decrease quantity">-</button>
-                                    <input type="number" value="${item.quantity}" min="1" max="${item.book.stock}" 
-                                           onchange="updateQuantity(${item.bookId}, this.value)"
-                                           aria-label="Quantity">
-                                    <button onclick="updateQuantity(${item.bookId}, ${item.quantity + 1})" 
-                                            aria-label="Increase quantity"
-                                            ${item.quantity >= item.book.stock ? 'disabled' : ''}>+</button>
+                if (result.success && result.data.items.length > 0) {
+                    const cart = result.data.items;
+                    cartData = cart;
+                    
+                    container.innerHTML = cart.map(item => `
+                        <div class="cart-item" data-book-id="${item.bookId}">
+                            <img src="${item.book.image || 'https://via.placeholder.com/100x140?text=No+Image'}" 
+                                 alt="${item.book.title}" 
+                                 class="cart-item-image"
+                                 onerror="this.src='https://via.placeholder.com/100x140?text=No+Image'">
+                            <div class="cart-item-details">
+                                <h3 class="cart-item-title">
+                                    <a href="book-details.html?id=${item.bookId}">${item.book.title}</a>
+                                </h3>
+                                <p class="cart-item-author">${item.book.author}</p>
+                                <p class="cart-item-price">${formatPrice(item.book.price)} each</p>
+                                <div class="cart-item-actions">
+                                    <div class="quantity-control">
+                                        <button onclick="updateQuantity(${item.bookId}, ${item.quantity - 1})" 
+                                                aria-label="Decrease quantity">-</button>
+                                        <input type="number" value="${item.quantity}" min="1" max="${item.book.stock}" 
+                                               onchange="updateQuantity(${item.bookId}, this.value)"
+                                               aria-label="Quantity">
+                                        <button onclick="updateQuantity(${item.bookId}, ${item.quantity + 1})" 
+                                                aria-label="Increase quantity"
+                                                ${item.quantity >= item.book.stock ? 'disabled' : ''}>+</button>
+                                    </div>
+                                    <button class="btn btn-danger" onclick="removeItem(${item.bookId})">
+                                        <i class="fas fa-trash"></i> Remove
+                                    </button>
                                 </div>
-                                <button class="btn btn-danger" onclick="removeItem(${item.bookId})">
-                                    <i class="fas fa-trash"></i> Remove
-                                </button>
+                            </div>
+                            <div style="text-align: right; font-weight: bold; font-size: 1.2rem; color: var(--accent-color);">
+                                ${formatPrice(item.book.price * item.quantity)}
                             </div>
                         </div>
-                        <div style="text-align: right; font-weight: bold; font-size: 1.2rem; color: var(--accent-color);">
-                            ${formatPrice(item.book.price * item.quantity)}
-                        </div>
-                    </div>
-                `).join('');
-                
-                // Update summary
-                const total = storage.getCartTotal();
-                document.getElementById('subtotal').textContent = formatPrice(total);
-                document.getElementById('total').textContent = formatPrice(total);
-                summary.style.display = 'block';
-            } else {
-                showEmptyState(container, 'Your cart is empty');
+                    `).join('');
+                    
+                    // Update summary
+                    document.getElementById('subtotal').textContent = formatPrice(result.data.total);
+                    document.getElementById('total').textContent = formatPrice(result.data.total);
+                    summary.style.display = 'block';
+                } else {
+                    showEmptyState(container, 'Your cart is empty');
+                    summary.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading cart:', error);
+                showEmptyState(container, 'Error loading cart');
                 summary.style.display = 'none';
             }
         }
 
         // Update quantity
-        function updateQuantity(bookId, newQuantity) {
+        async function updateQuantity(bookId, newQuantity) {
             newQuantity = parseInt(newQuantity);
             
             if (newQuantity < 0) return;
@@ -210,40 +221,73 @@
                 return;
             }
             
-            const result = storage.updateCartItem(bookId, newQuantity);
-            
-            if (result) {
-                loadCart();
-                updateCartCount();
-                showToast('Cart updated', 'success');
-            } else {
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/cart/update`, {
+                    method: 'PUT',
+                    headers: API_CONFIG.getHeaders(),
+                    body: JSON.stringify({ bookId, quantity: newQuantity })
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    loadCart();
+                    updateCartCount();
+                    showToast('Cart updated', 'success');
+                } else {
+                    showToast(result.message || 'Failed to update cart', 'error');
+                }
+            } catch (error) {
+                console.error('Error updating cart:', error);
                 showToast('Failed to update cart', 'error');
             }
         }
 
         // Remove item
-        function removeItem(bookId) {
+        async function removeItem(bookId) {
             if (!confirm('Are you sure you want to remove this item?')) return;
             
-            const result = storage.removeFromCart(bookId);
-            
-            if (result) {
-                loadCart();
-                updateCartCount();
-                showToast('Item removed from cart', 'success');
-            } else {
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/cart/remove/${bookId}`, {
+                    method: 'DELETE',
+                    headers: API_CONFIG.getHeaders()
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    loadCart();
+                    updateCartCount();
+                    showToast('Item removed from cart', 'success');
+                } else {
+                    showToast(result.message || 'Failed to remove item', 'error');
+                }
+            } catch (error) {
+                console.error('Error removing item:', error);
                 showToast('Failed to remove item', 'error');
             }
         }
 
         // Clear cart
-        function clearCart() {
+        async function clearCart() {
             if (!confirm('Are you sure you want to clear your cart?')) return;
             
-            storage.clearCart();
-            loadCart();
-            updateCartCount();
-            showToast('Cart cleared', 'success');
+            try {
+                const response = await fetch(`${API_CONFIG.BASE_URL}/cart/clear`, {
+                    method: 'DELETE',
+                    headers: API_CONFIG.getHeaders()
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    loadCart();
+                    updateCartCount();
+                    showToast('Cart cleared', 'success');
+                } else {
+                    showToast(result.message || 'Failed to clear cart', 'error');
+                }
+            } catch (error) {
+                console.error('Error clearing cart:', error);
+                showToast('Failed to clear cart', 'error');
+            }
         }
 
         // Proceed to checkout

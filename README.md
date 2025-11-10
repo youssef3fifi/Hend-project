@@ -1,201 +1,440 @@
-# BookStore - Professional Frontend Web Application
+# 📚 BookStore - Full-Stack Web Application
 
-A professional, full-featured online bookstore built with pure HTML, CSS, and JavaScript using In-Memory Storage. No backend or database required!
+A professional, full-featured online bookstore built with **Node.js + Express** backend and vanilla JavaScript frontend. Features a REST API with in-memory storage and session-based cart management.
 
-## Features
+## 🌟 Features
 
-- **Modern, Responsive Design**: Mobile-first approach with professional UI/UX
-- **Complete Book Management**: Browse, search, filter, and purchase books
-- **Shopping Cart**: LocalStorage-based cart system with quantity management
-- **Admin Dashboard**: Simple inventory management interface
-- **Category System**: Organized book categorization
-- **Search & Filter**: Advanced search and filtering capabilities
-- **In-Memory Storage**: All data stored in JavaScript arrays with localStorage persistence for cart
-- **No Setup Required**: Just open index.html and start browsing!
+### Backend Features
+- ✅ **RESTful API** - Clean and well-documented endpoints
+- ✅ **Express.js** - Fast and minimalist web framework
+- ✅ **In-Memory Storage** - No database setup required
+- ✅ **Session-Based Cart** - Persistent shopping cart per session
+- ✅ **CORS Enabled** - Cross-origin resource sharing
+- ✅ **Error Handling** - Comprehensive error handling
+- ✅ **JSON Responses** - Consistent response structure
 
-## Tech Stack
+### Frontend Features
+- ✅ **Modern, Responsive Design** - Mobile-first approach
+- ✅ **Complete Book Management** - Browse, search, filter
+- ✅ **Shopping Cart** - API-based cart with quantity management
+- ✅ **Admin Dashboard** - Book inventory management
+- ✅ **Category System** - Organized book categorization
+- ✅ **Search & Filter** - Advanced search capabilities
+- ✅ **Real-time Updates** - Cart count updates automatically
 
-- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
-- **Storage**: In-Memory Arrays + LocalStorage for cart persistence
+## 🛠 Tech Stack
+
+### Backend
+- **Runtime**: Node.js
+- **Framework**: Express.js 4.18.2
+- **Middleware**: 
+  - cors 2.8.5
+  - body-parser 1.20.2
+- **Dev Tools**: nodemon 3.0.1
+
+### Frontend
+- **Languages**: HTML5, CSS3, JavaScript (ES6+)
 - **Icons**: Font Awesome 6.4.0
-- **No Backend**: Pure client-side application
+- **Architecture**: SPA with API integration
 
-## Requirements
+## 📋 Requirements
 
+- Node.js 14+ and npm
 - Any modern web browser (Chrome, Firefox, Safari, Edge)
-- A local web server (optional but recommended)
-  - VS Code Live Server
-  - Python's http.server
-  - PHP's built-in server
-  - Node.js http-server
 
-## Quick Start
+## 🚀 Quick Start
 
-### Method 1: VS Code Live Server (Recommended)
-
-1. Install the "Live Server" extension in VS Code
-2. Open the project folder in VS Code
-3. Right-click on `index.html` and select "Open with Live Server"
-4. Your browser will automatically open to `http://localhost:5500`
-
-### Method 2: Python HTTP Server
+### 1. Install Dependencies
 
 ```bash
-# Navigate to the project directory
-cd /path/to/Hend-project
+# Navigate to backend directory
+cd backend
 
-# Start the server
-python -m http.server 8000
-
-# Open your browser to:
-# http://localhost:8000
+# Install all dependencies
+npm install
 ```
 
-### Method 3: PHP Built-in Server
+### 2. Start the Server
 
 ```bash
-# Navigate to the project directory
-cd /path/to/Hend-project
+# Development mode (with auto-restart)
+npm run dev
 
-# Start the server
-php -S localhost:8000
-
-# Open your browser to:
-# http://localhost:8000
+# Production mode
+npm start
 ```
 
-### Method 4: Node.js HTTP Server
+### 3. Access the Application
 
-```bash
-# Navigate to the project directory
-cd /path/to/Hend-project
+Open your browser to: **http://localhost:3000**
 
-# Start the server (install if needed)
-npx http-server -p 8000
+- Frontend automatically served
+- API available at http://localhost:3000/api
 
-# Open your browser to:
-# http://localhost:8000
-```
-
-### Method 5: Direct File Access
-
-Simply double-click `index.html` to open it in your browser. Some features may work better with a local server.
-
-## No Setup Required! ✅
-
-- ✅ No database installation
-- ✅ No backend configuration
-- ✅ No server setup
-- ✅ Just open and run!
-
-See [HOW_TO_RUN.md](HOW_TO_RUN.md) for detailed instructions in Arabic.
-
-## Application Structure
+## 📁 Project Structure
 
 ```
 bookstore/
-├── assets/                 # Static assets
-│   ├── css/
-│   │   └── style.css      # Main stylesheet
-│   └── js/
-│       ├── storage.js     # In-Memory storage system
-│       └── main.js        # Main JavaScript functions
-├── pages/                  # Application pages
-│   ├── admin/
-│   │   └── index.html     # Admin dashboard
-│   ├── book-details.html  # Book details page
-│   ├── cart.html          # Shopping cart
-│   └── shop.html          # Shop/catalog page
-├── index.html             # Home page
-├── HOW_TO_RUN.md          # Running instructions (Arabic)
-└── README.md              # This file
+├── backend/                    # Node.js + Express backend
+│   ├── models/
+│   │   └── storage.js         # In-memory storage with session support
+│   ├── routes/
+│   │   ├── books.js           # Book CRUD endpoints
+│   │   ├── cart.js            # Cart management endpoints
+│   │   └── categories.js      # Category endpoints
+│   ├── server.js              # Main Express server
+│   ├── package.json           # Dependencies and scripts
+│   └── node_modules/          # Installed packages (gitignored)
+│
+├── frontend/                   # Frontend application
+│   ├── assets/
+│   │   ├── css/
+│   │   │   └── style.css      # Main stylesheet
+│   │   └── js/
+│   │       ├── main.js        # Main JavaScript with API calls
+│   │       └── storage.js     # Legacy (kept for reference)
+│   ├── pages/
+│   │   ├── admin/
+│   │   │   └── index.html     # Admin dashboard
+│   │   ├── book-details.html  # Book details page
+│   │   ├── cart.html          # Shopping cart
+│   │   └── shop.html          # Shop/catalog page
+│   ├── config.js              # API configuration
+│   └── index.html             # Home page
+│
+├── HOW_TO_RUN.md              # Detailed setup instructions
+├── README.md                  # This file
+└── .gitignore                 # Git ignore rules
 ```
 
-## Features Overview
+## 🔌 API Documentation
+
+### Response Format
+
+All API responses follow this structure:
+```json
+{
+  "success": true,
+  "data": { /* response data */ },
+  "message": "Success message"
+}
+```
+
+### Books API
+
+#### Get All Books
+```
+GET /api/books
+Query Params: ?search=query&category=Fiction
+```
+
+#### Get Book by ID
+```
+GET /api/books/:id
+```
+
+#### Create Book (Admin)
+```
+POST /api/books
+Body: {
+  "title": "Book Title",
+  "author": "Author Name",
+  "price": 19.99,
+  "category": "Fiction",
+  "isbn": "978-1-234-56789-0",
+  "stock": 10,
+  "description": "Book description",
+  "image": "https://example.com/image.jpg"
+}
+```
+
+#### Update Book (Admin)
+```
+PUT /api/books/:id
+Body: { /* fields to update */ }
+```
+
+#### Delete Book (Admin)
+```
+DELETE /api/books/:id
+```
+
+### Cart API
+
+All cart endpoints require `X-Session-ID` header.
+
+#### Get Cart
+```
+GET /api/cart
+Headers: X-Session-ID: your-session-id
+```
+
+#### Add to Cart
+```
+POST /api/cart/add
+Headers: X-Session-ID: your-session-id
+Body: {
+  "bookId": 1,
+  "quantity": 2
+}
+```
+
+#### Update Cart Item
+```
+PUT /api/cart/update
+Headers: X-Session-ID: your-session-id
+Body: {
+  "bookId": 1,
+  "quantity": 3
+}
+```
+
+#### Remove from Cart
+```
+DELETE /api/cart/remove/:bookId
+Headers: X-Session-ID: your-session-id
+```
+
+#### Clear Cart
+```
+DELETE /api/cart/clear
+Headers: X-Session-ID: your-session-id
+```
+
+### Categories API
+
+#### Get All Categories
+```
+GET /api/categories
+```
+
+#### Get Category by ID
+```
+GET /api/categories/:id
+```
+
+### Health Check
+```
+GET /api/health
+```
+
+## 💾 Data Storage
+
+### In-Memory Storage
+- All data stored in Node.js memory
+- **Data resets on server restart**
+- Pre-loaded with 8 sample books
+- 6 pre-defined categories
+
+### Pre-loaded Books
+1. The Great Gatsby - F. Scott Fitzgerald
+2. To Kill a Mockingbird - Harper Lee
+3. 1984 - George Orwell
+4. Pride and Prejudice - Jane Austen
+5. The Hobbit - J.R.R. Tolkien
+6. Harry Potter and the Philosopher's Stone - J.K. Rowling
+7. The Catcher in the Rye - J.D. Salinger
+8. The Lord of the Rings - J.R.R. Tolkien
+
+### Categories
+- Fiction
+- Science Fiction
+- Fantasy
+- Romance
+- Mystery
+- Non-Fiction
+
+### Session Management
+
+- Session ID automatically generated on first visit
+- Stored in browser's localStorage
+- Sent with each API request via `X-Session-ID` header
+- Cart persists per session until server restart
+
+## 🚀 AWS EC2 Deployment
+
+### Prerequisites
+1. EC2 instance running (Amazon Linux 2 or Ubuntu)
+2. Security group with port 3000 open
+3. SSH access to instance
+
+### Deployment Steps
+
+```bash
+# 1. Connect to EC2
+ssh -i your-key.pem ec2-user@your-ec2-ip
+
+# 2. Install Node.js
+curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
+sudo yum install -y nodejs
+
+# 3. Clone and setup
+git clone your-repo-url
+cd Hend-project/backend
+npm install
+
+# 4. Install PM2 (process manager)
+sudo npm install -g pm2
+
+# 5. Start application
+pm2 start server.js --name bookstore
+pm2 startup
+pm2 save
+```
+
+### Security Group Configuration
+
+Add inbound rule:
+- **Type**: Custom TCP
+- **Port**: 3000
+- **Source**: 0.0.0.0/0 (or specific IPs)
+
+### Access Application
+```
+http://YOUR_EC2_PUBLIC_IP:3000
+```
+
+The frontend automatically detects the server IP and connects to the API.
+
+## 🔧 Configuration
+
+### Environment Variables
+
+```bash
+# Set custom port
+PORT=8080 npm start
+
+# Or create .env file (requires dotenv package)
+PORT=3000
+```
+
+### Frontend API Configuration
+
+Edit `frontend/config.js`:
+```javascript
+const API_CONFIG = {
+    BASE_URL: 'http://your-server-ip:3000/api',
+    // ...
+};
+```
+
+## 🧪 Testing API Endpoints
+
+### Using curl
+
+```bash
+# Test health
+curl http://localhost:3000/api/health
+
+# Get all books
+curl http://localhost:3000/api/books
+
+# Get categories
+curl http://localhost:3000/api/categories
+
+# Add to cart
+curl -X POST http://localhost:3000/api/cart/add \
+  -H "Content-Type: application/json" \
+  -H "X-Session-ID: test-session" \
+  -d '{"bookId": 1, "quantity": 2}'
+
+# Get cart
+curl http://localhost:3000/api/cart \
+  -H "X-Session-ID: test-session"
+```
+
+## 🎯 Features Overview
 
 ### 🏠 Home Page
-- Hero section with search functionality
-- Category browsing
+- Hero section with search
+- Category browsing cards
 - Featured books showcase
+- Responsive grid layout
 
 ### 📚 Shop Page
 - Complete book catalog
-- Advanced filtering (category, price range, search)
-- Pagination support
-- Responsive grid layout
+- Advanced filtering (category, price, search)
+- Real-time search
+- Add to cart functionality
 
 ### 📖 Book Details Page
 - Comprehensive book information
 - Stock availability
 - Related books suggestions
-- Add to cart functionality
+- Add to cart with quantity
 
 ### 🛒 Shopping Cart
 - View all cart items
 - Update quantities
 - Remove items
 - Order summary
-- LocalStorage persistence
+- Real-time total calculation
 
 ### 👨‍💼 Admin Dashboard
 - View inventory statistics
 - Book management interface
-- Simple CRUD operations
+- CRUD operations on books
 - Responsive data table
 
-## Data Storage
+## 🔒 Security Considerations
 
-All book data is stored in JavaScript arrays in `assets/js/storage.js`. The shopping cart is persisted to localStorage for convenience.
+- No authentication implemented (add for production)
+- Admin endpoints accessible to all (secure for production)
+- CORS enabled for all origins (restrict for production)
+- Input validation on API endpoints
+- SQL injection not applicable (in-memory storage)
+- XSS protection via proper HTML escaping
 
-### Modifying Books
+## 📈 Performance
 
-To add, edit, or remove books, edit the `books` array in `assets/js/storage.js`:
+- In-memory storage for fast access
+- No database queries
+- Session-based cart (no localStorage limitations)
+- Static file serving optimized by Express
+- Minimal dependencies
 
-```javascript
-this.books = [
-    {
-        id: 1,
-        title: "Your Book Title",
-        author: "Author Name",
-        price: 19.99,
-        category: "Fiction",
-        isbn: "978-1-234-56789-0",
-        stock: 10,
-        description: "Book description...",
-        image: "https://example.com/image.jpg",
-        rating: 4.5
-    }
-    // Add more books...
-];
+## 🐛 Troubleshooting
+
+### Server Won't Start
+```bash
+# Check if port is in use
+lsof -i :3000
+
+# Kill process on port 3000
+kill -9 <PID>
 ```
 
-## Browser Compatibility
+### API Not Responding
+- Verify server is running: `curl http://localhost:3000/api/health`
+- Check console for errors
+- Verify correct API URL in `frontend/config.js`
 
-- ✅ Chrome 90+
-- ✅ Firefox 88+
-- ✅ Safari 14+
-- ✅ Edge 90+
-- ✅ Opera 76+
+### Cart Not Working
+- Check browser console for errors
+- Verify `X-Session-ID` header is being sent
+- Check localStorage for session ID
 
-## Advantages
+## 🤝 Contributing
 
-- **Zero Setup**: No installation or configuration required
-- **Fast**: No database queries or server-side processing
-- **Portable**: Works on any platform with a web browser
-- **Simple**: Easy to understand and modify
-- **Lightweight**: Minimal dependencies
+This is an educational project. Feel free to:
+- Add database integration
+- Implement authentication
+- Add payment processing
+- Enhance UI/UX
+- Add tests
 
-## Support
+## 📄 License
 
-For issues and questions:
-- Check logs: `/var/log/httpd/` or `/var/log/apache2/`
-- Verify PHP version: `php -v`
-- Check Apache status: `sudo systemctl status httpd/apache2`
+This project is for educational purposes.
 
-## License
+## 🙏 Acknowledgments
 
-This project is created for educational purposes.
+Built with ❤️ using:
+- Express.js
+- Node.js
+- Vanilla JavaScript
+- Font Awesome
 
-## Credits
+---
 
-Developed with ❤️ using modern web technologies.
+**For detailed instructions, see [HOW_TO_RUN.md](HOW_TO_RUN.md)**
