@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin Dashboard - BookStore">
+    <title>Admin Dashboard - BookStore</title>
+    <link rel="stylesheet" href="../../assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="main-header">
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-brand">
+                    <a href="../../index.html">
+                        <i class="fas fa-book"></i> BookStore
+                    </a>
+                </div>
+                
+                <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                
+                <div class="nav-menu" id="navMenu">
+                    <ul class="nav-links">
+                        <li><a href="../../index.html">Home</a></li>
+                        <li><a href="../shop.html">Shop</a></li>
+                        <li><a href="../cart.html">
+                            <i class="fas fa-shopping-cart"></i> Cart <span class="cart-count" id="cartCount">0</span>
+                        </a></li>
+                        <li><a href="index.html" class="active">
+                            <i class="fas fa-user-shield"></i> Admin
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="section-title">
+                <h2><i class="fas fa-user-shield"></i> Admin Dashboard</h2>
+                <p>Manage your bookstore inventory</p>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div style="background: var(--card-bg); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-md);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.5rem;">Total Books</p>
+                            <h3 style="font-size: 2rem; margin: 0;" id="totalBooks">0</h3>
+                        </div>
+                        <div style="background: var(--primary-color); color: white; width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-book" style="font-size: 1.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: var(--card-bg); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-md);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.5rem;">Categories</p>
+                            <h3 style="font-size: 2rem; margin: 0;" id="totalCategories">0</h3>
+                        </div>
+                        <div style="background: var(--accent-color); color: white; width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-layer-group" style="font-size: 1.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: var(--card-bg); border-radius: 12px; padding: 1.5rem; box-shadow: var(--shadow-md);">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.5rem;">Total Stock</p>
+                            <h3 style="font-size: 2rem; margin: 0;" id="totalStock">0</h3>
+                        </div>
+                        <div style="background: var(--success-color); color: white; width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-boxes" style="font-size: 1.5rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Books Management -->
+            <div style="background: var(--card-bg); border-radius: 12px; padding: 2rem; box-shadow: var(--shadow-md); margin-bottom: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                    <h3>Books Inventory</h3>
+                    <button class="btn btn-primary" onclick="showAddBookModal()">
+                        <i class="fas fa-plus"></i> Add New Book
+                    </button>
+                </div>
+                
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: var(--bg-color); text-align: left;">
+                                <th style="padding: 1rem; border-bottom: 2px solid var(--border-color);">ID</th>
+                                <th style="padding: 1rem; border-bottom: 2px solid var(--border-color);">Title</th>
+                                <th style="padding: 1rem; border-bottom: 2px solid var(--border-color);">Author</th>
+                                <th style="padding: 1rem; border-bottom: 2px solid var(--border-color);">Category</th>
+                                <th style="padding: 1rem; border-bottom: 2px solid var(--border-color);">Price</th>
+                                <th style="padding: 1rem; border-bottom: 2px solid var(--border-color);">Stock</th>
+                                <th style="padding: 1rem; border-bottom: 2px solid var(--border-color);">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="booksTable">
+                            <tr>
+                                <td colspan="7" style="padding: 2rem; text-align: center;">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>BookStore</h3>
+                    <p>Your trusted online bookstore with a wide selection of books across all genres.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="../../index.html">Home</a></li>
+                        <li><a href="../shop.html">Shop</a></li>
+                        <li><a href="../cart.html">Cart</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p><i class="fas fa-envelope"></i> info@bookstore.com</p>
+                    <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Follow Us</h4>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; <span id="currentYear"></span> BookStore. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="../../assets/js/storage.js"></script>
+    <script src="../../assets/js/main.js"></script>
+    <script>
+        // Set current year
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        
+        // Load dashboard stats
+        function loadStats() {
+            const books = storage.getAllBooks();
+            const categories = storage.getAllCategories();
+            
+            document.getElementById('totalBooks').textContent = books.length;
+            document.getElementById('totalCategories').textContent = categories.length;
+            
+            const totalStock = books.reduce((sum, book) => sum + book.stock, 0);
+            document.getElementById('totalStock').textContent = totalStock;
+        }
+        
+        // Load books table
+        function loadBooksTable() {
+            const books = storage.getAllBooks();
+            const tbody = document.getElementById('booksTable');
+            
+            if (books && books.length > 0) {
+                tbody.innerHTML = books.map(book => `
+                    <tr style="border-bottom: 1px solid var(--border-color);">
+                        <td style="padding: 1rem;">${book.id}</td>
+                        <td style="padding: 1rem;">${book.title}</td>
+                        <td style="padding: 1rem;">${book.author}</td>
+                        <td style="padding: 1rem;">${book.category}</td>
+                        <td style="padding: 1rem;">${formatPrice(book.price)}</td>
+                        <td style="padding: 1rem;">${book.stock}</td>
+                        <td style="padding: 1rem;">
+                            <button class="btn btn-sm" onclick="editBook(${book.id})" style="margin-right: 0.5rem;">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteBook(${book.id})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            } else {
+                tbody.innerHTML = '<tr><td colspan="7" style="padding: 2rem; text-align: center;">No books found</td></tr>';
+            }
+        }
+        
+        // Show add book modal
+        function showAddBookModal() {
+            showToast('Add book feature: Use browser console or modify storage.js directly', 'info');
+        }
+        
+        // Edit book
+        function editBook(bookId) {
+            showToast('Edit book feature: Use browser console or modify storage.js directly', 'info');
+        }
+        
+        // Delete book
+        function deleteBook(bookId) {
+            if (!confirm('Are you sure you want to delete this book?')) return;
+            
+            const result = storage.deleteBook(bookId);
+            if (result) {
+                showToast('Book deleted successfully', 'success');
+                loadStats();
+                loadBooksTable();
+            } else {
+                showToast('Failed to delete book', 'error');
+            }
+        }
+        
+        // Load on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStats();
+            loadBooksTable();
+        });
+    </script>
+</body>
+</html>

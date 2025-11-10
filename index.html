@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Professional online bookstore with a wide selection of books">
+    <title>Home - BookStore</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="main-header">
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-brand">
+                    <a href="index.html">
+                        <i class="fas fa-book"></i> BookStore
+                    </a>
+                </div>
+                
+                <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                
+                <div class="nav-menu" id="navMenu">
+                    <ul class="nav-links">
+                        <li><a href="index.html" class="active">Home</a></li>
+                        <li><a href="pages/shop.html">Shop</a></li>
+                        <li><a href="pages/cart.html">
+                            <i class="fas fa-shopping-cart"></i> Cart <span class="cart-count" id="cartCount">0</span>
+                        </a></li>
+                        <li><a href="pages/admin/index.html">
+                            <i class="fas fa-user-shield"></i> Admin
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="container">
+                <h1>Welcome to BookStore</h1>
+                <p>Discover your next great read from our extensive collection</p>
+                <div class="search-bar">
+                    <input type="text" id="homeSearch" placeholder="Search for books, authors, or categories..." aria-label="Search books">
+                    <button onclick="performSearch()"><i class="fas fa-search"></i> Search</button>
+                </div>
+            </div>
+        </section>
+
+        <div class="container">
+            <!-- Categories Section -->
+            <section class="categories">
+                <div class="section-title">
+                    <h2>Browse by Category</h2>
+                    <p>Explore our diverse collection</p>
+                </div>
+                <div class="categories-grid" id="categoriesGrid">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Featured Books Section -->
+            <section class="featured-books">
+                <div class="section-title">
+                    <h2>Featured Books</h2>
+                    <p>Check out our top picks</p>
+                </div>
+                <div class="books-grid" id="featuredBooksGrid">
+                    <div class="loading">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+    
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>BookStore</h3>
+                    <p>Your trusted online bookstore with a wide selection of books across all genres.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="pages/shop.html">Shop</a></li>
+                        <li><a href="pages/cart.html">Cart</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p><i class="fas fa-envelope"></i> info@bookstore.com</p>
+                    <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Follow Us</h4>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; <span id="currentYear"></span> BookStore. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="assets/js/storage.js"></script>
+    <script src="assets/js/main.js"></script>
+    <script>
+        // Set current year
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        
+        // Load categories
+        function loadCategories() {
+            const categories = storage.getAllCategories();
+            const grid = document.getElementById('categoriesGrid');
+            
+            if (categories && categories.length > 0) {
+                // Get book count for each category
+                const categoriesWithCount = categories.map(category => {
+                    const count = storage.getAllBooks().filter(book => book.category === category.name).length;
+                    return { ...category, book_count: count };
+                });
+                
+                grid.innerHTML = categoriesWithCount.map(category => `
+                    <div class="category-card" onclick="window.location.href='pages/shop.html?category=${encodeURIComponent(category.name)}'">
+                        <i class="fas fa-book"></i>
+                        <h3>${category.name}</h3>
+                        <p class="book-count">${category.book_count} books</p>
+                    </div>
+                `).join('');
+            } else {
+                showEmptyState(grid, 'No categories available');
+            }
+        }
+
+        // Load featured books
+        function loadFeaturedBooks() {
+            const books = storage.getAllBooks();
+            const grid = document.getElementById('featuredBooksGrid');
+            
+            if (books && books.length > 0) {
+                // Display first 8 books
+                const featuredBooks = books.slice(0, 8);
+                grid.innerHTML = featuredBooks.map(book => `
+                    <div class="book-card">
+                        <div class="book-card-image">
+                            <img src="${book.image || 'https://via.placeholder.com/300x400?text=No+Image'}" 
+                                 alt="${book.title}" 
+                                 onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'">
+                        </div>
+                        <div class="book-card-content">
+                            <h3 class="book-card-title">
+                                <a href="pages/book-details.html?id=${book.id}">${book.title}</a>
+                            </h3>
+                            <p class="book-card-author">${book.author}</p>
+                            <div class="book-card-rating">
+                                <span class="stars">${generateStars(book.rating)}</span>
+                                <span>${book.rating}</span>
+                            </div>
+                            <div class="book-card-footer">
+                                <span class="book-card-price">${formatPrice(book.price)}</span>
+                                ${getStockBadge(book.stock)}
+                            </div>
+                            <button class="btn btn-primary btn-block mt-2" 
+                                    onclick="addToCart(${book.id})"
+                                    ${book.stock === 0 ? 'disabled' : ''}>
+                                <i class="fas fa-shopping-cart"></i> Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                showEmptyState(grid, 'No books available');
+            }
+        }
+
+        // Perform search
+        function performSearch() {
+            const searchTerm = document.getElementById('homeSearch').value;
+            if (searchTerm.trim()) {
+                window.location.href = `pages/shop.html?search=${encodeURIComponent(searchTerm)}`;
+            }
+        }
+
+        // Allow Enter key to search
+        document.getElementById('homeSearch').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCategories();
+            loadFeaturedBooks();
+        });
+    </script>
+</body>
+</html>

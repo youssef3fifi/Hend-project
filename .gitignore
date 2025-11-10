@@ -18,17 +18,8 @@ Thumbs.db
 *.bak
 *.backup
 
-# Environment files (if using)
-.env
-.env.local
-
-# PHP
-vendor/
-composer.lock
-
-# Uploads (if implementing file uploads)
-uploads/
-temp/
+# Node modules (if using npm)
+node_modules/
 
 # Cache
 cache/

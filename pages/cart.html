@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Professional online bookstore with a wide selection of books">
+    <title>Shopping Cart - BookStore</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="main-header">
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-brand">
+                    <a href="../index.html">
+                        <i class="fas fa-book"></i> BookStore
+                    </a>
+                </div>
+                
+                <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                
+                <div class="nav-menu" id="navMenu">
+                    <ul class="nav-links">
+                        <li><a href="../index.html">Home</a></li>
+                        <li><a href="shop.html">Shop</a></li>
+                        <li><a href="cart.html" class="active">
+                            <i class="fas fa-shopping-cart"></i> Cart <span class="cart-count" id="cartCount">0</span>
+                        </a></li>
+                        <li><a href="admin/index.html">
+                            <i class="fas fa-user-shield"></i> Admin
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <main class="main-content">
+        <div class="container">
+            <div class="section-title">
+                <h2>Shopping Cart</h2>
+                <p>Review your items</p>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; align-items: start;">
+                <!-- Cart Items -->
+                <div>
+                    <div class="cart-items" id="cartItems">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading cart...</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cart Summary -->
+                <div>
+                    <div class="cart-summary" id="cartSummary" style="display: none;">
+                        <h3>Order Summary</h3>
+                        <div class="cart-summary-row">
+                            <span>Subtotal:</span>
+                            <span id="subtotal">$0.00</span>
+                        </div>
+                        <div class="cart-summary-row">
+                            <span>Shipping:</span>
+                            <span>FREE</span>
+                        </div>
+                        <div class="cart-summary-row">
+                            <span>Total:</span>
+                            <span id="total">$0.00</span>
+                        </div>
+                        <button class="btn btn-success btn-block" onclick="proceedToCheckout()">
+                            <i class="fas fa-check"></i> Proceed to Checkout
+                        </button>
+                        <button class="btn btn-outline btn-block mt-2" onclick="clearCart()">
+                            <i class="fas fa-trash"></i> Clear Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>BookStore</h3>
+                    <p>Your trusted online bookstore with a wide selection of books across all genres.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="../index.html">Home</a></li>
+                        <li><a href="shop.html">Shop</a></li>
+                        <li><a href="cart.html">Cart</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p><i class="fas fa-envelope"></i> info@bookstore.com</p>
+                    <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Follow Us</h4>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; <span id="currentYear"></span> BookStore. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <style>
+        @media (max-width: 768px) {
+            .container > div {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .cart-summary {
+                position: static !important;
+            }
+        }
+    </style>
+    
+    <script src="../assets/js/storage.js"></script>
+    <script src="../assets/js/main.js"></script>
+    <script>
+        // Set current year
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        
+        let cartData = null;
+
+        // Load cart
+        function loadCart() {
+            const cart = storage.getCart();
+            const container = document.getElementById('cartItems');
+            const summary = document.getElementById('cartSummary');
+            
+            if (cart && cart.length > 0) {
+                cartData = cart;
+                
+                container.innerHTML = cart.map(item => `
+                    <div class="cart-item" data-book-id="${item.bookId}">
+                        <img src="${item.book.image || 'https://via.placeholder.com/100x140?text=No+Image'}" 
+                             alt="${item.book.title}" 
+                             class="cart-item-image"
+                             onerror="this.src='https://via.placeholder.com/100x140?text=No+Image'">
+                        <div class="cart-item-details">
+                            <h3 class="cart-item-title">
+                                <a href="book-details.html?id=${item.bookId}">${item.book.title}</a>
+                            </h3>
+                            <p class="cart-item-author">${item.book.author}</p>
+                            <p class="cart-item-price">${formatPrice(item.book.price)} each</p>
+                            <div class="cart-item-actions">
+                                <div class="quantity-control">
+                                    <button onclick="updateQuantity(${item.bookId}, ${item.quantity - 1})" 
+                                            aria-label="Decrease quantity">-</button>
+                                    <input type="number" value="${item.quantity}" min="1" max="${item.book.stock}" 
+                                           onchange="updateQuantity(${item.bookId}, this.value)"
+                                           aria-label="Quantity">
+                                    <button onclick="updateQuantity(${item.bookId}, ${item.quantity + 1})" 
+                                            aria-label="Increase quantity"
+                                            ${item.quantity >= item.book.stock ? 'disabled' : ''}>+</button>
+                                </div>
+                                <button class="btn btn-danger" onclick="removeItem(${item.bookId})">
+                                    <i class="fas fa-trash"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                        <div style="text-align: right; font-weight: bold; font-size: 1.2rem; color: var(--accent-color);">
+                            ${formatPrice(item.book.price * item.quantity)}
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Update summary
+                const total = storage.getCartTotal();
+                document.getElementById('subtotal').textContent = formatPrice(total);
+                document.getElementById('total').textContent = formatPrice(total);
+                summary.style.display = 'block';
+            } else {
+                showEmptyState(container, 'Your cart is empty');
+                summary.style.display = 'none';
+            }
+        }
+
+        // Update quantity
+        function updateQuantity(bookId, newQuantity) {
+            newQuantity = parseInt(newQuantity);
+            
+            if (newQuantity < 0) return;
+            
+            if (newQuantity === 0) {
+                removeItem(bookId);
+                return;
+            }
+            
+            const result = storage.updateCartItem(bookId, newQuantity);
+            
+            if (result) {
+                loadCart();
+                updateCartCount();
+                showToast('Cart updated', 'success');
+            } else {
+                showToast('Failed to update cart', 'error');
+            }
+        }
+
+        // Remove item
+        function removeItem(bookId) {
+            if (!confirm('Are you sure you want to remove this item?')) return;
+            
+            const result = storage.removeFromCart(bookId);
+            
+            if (result) {
+                loadCart();
+                updateCartCount();
+                showToast('Item removed from cart', 'success');
+            } else {
+                showToast('Failed to remove item', 'error');
+            }
+        }
+
+        // Clear cart
+        function clearCart() {
+            if (!confirm('Are you sure you want to clear your cart?')) return;
+            
+            storage.clearCart();
+            loadCart();
+            updateCartCount();
+            showToast('Cart cleared', 'success');
+        }
+
+        // Proceed to checkout
+        function proceedToCheckout() {
+            if (cartData && cartData.length > 0) {
+                showToast('Checkout feature coming soon!', 'info');
+                // In a real application, this would redirect to a checkout page
+            } else {
+                showToast('Your cart is empty', 'error');
+            }
+        }
+
+        // Load cart on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCart();
+        });
+    </script>
+</body>
+</html>
