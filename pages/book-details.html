@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Professional online bookstore with a wide selection of books">
+    <title>Book Details - BookStore</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header class="main-header">
+        <nav class="navbar">
+            <div class="container">
+                <div class="nav-brand">
+                    <a href="../index.html">
+                        <i class="fas fa-book"></i> BookStore
+                    </a>
+                </div>
+                
+                <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                
+                <div class="nav-menu" id="navMenu">
+                    <ul class="nav-links">
+                        <li><a href="../index.html">Home</a></li>
+                        <li><a href="shop.html">Shop</a></li>
+                        <li><a href="cart.html">
+                            <i class="fas fa-shopping-cart"></i> Cart <span class="cart-count" id="cartCount">0</span>
+                        </a></li>
+                        <li><a href="admin/index.html">
+                            <i class="fas fa-user-shield"></i> Admin
+                        </a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <main class="main-content">
+        <div class="container">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" style="margin-bottom: 2rem;">
+                <ol style="list-style: none; display: flex; gap: 0.5rem; color: var(--text-light);">
+                    <li><a href="../index.html">Home</a></li>
+                    <li>/</li>
+                    <li><a href="shop.html">Shop</a></li>
+                    <li>/</li>
+                    <li id="breadcrumbTitle">Book Details</li>
+                </ol>
+            </nav>
+            
+            <!-- Book Details -->
+            <div id="bookDetails">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading book details...</p>
+                </div>
+            </div>
+            
+            <!-- Related Books -->
+            <div style="margin-top: 3rem;">
+                <div class="section-title">
+                    <h2>Related Books</h2>
+                    <p>You might also like</p>
+                </div>
+                <div class="books-grid" id="relatedBooks"></div>
+            </div>
+        </div>
+    </main>
+    
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>BookStore</h3>
+                    <p>Your trusted online bookstore with a wide selection of books across all genres.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="../index.html">Home</a></li>
+                        <li><a href="shop.html">Shop</a></li>
+                        <li><a href="cart.html">Cart</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p><i class="fas fa-envelope"></i> info@bookstore.com</p>
+                    <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Follow Us</h4>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; <span id="currentYear"></span> BookStore. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script src="../assets/js/storage.js"></script>
+    <script src="../assets/js/main.js"></script>
+    <script>
+        // Set current year
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        
+        // Get book ID from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const bookId = parseInt(urlParams.get('id'));
+
+        // Load book details
+        function loadBookDetails() {
+            const book = storage.getBookById(bookId);
+            const container = document.getElementById('bookDetails');
+            
+            if (book) {
+                // Update breadcrumb
+                document.getElementById('breadcrumbTitle').textContent = book.title;
+                
+                container.innerHTML = `
+                    <div class="book-details">
+                        <div>
+                            <img src="${book.image || 'https://via.placeholder.com/400x600?text=No+Image'}" 
+                                 alt="${book.title}" 
+                                 class="book-details-image"
+                                 onerror="this.src='https://via.placeholder.com/400x600?text=No+Image'">
+                        </div>
+                        <div class="book-details-info">
+                            <h1>${book.title}</h1>
+                            <div class="book-details-meta">
+                                <p><strong>Author:</strong> ${book.author}</p>
+                                <p><strong>Category:</strong> ${book.category || 'Uncategorized'}</p>
+                                <p><strong>ISBN:</strong> ${book.isbn || 'N/A'}</p>
+                                <p><strong>Rating:</strong> 
+                                    <span class="stars">${generateStars(book.rating)}</span>
+                                    ${book.rating}/5.0
+                                </p>
+                                <p><strong>Availability:</strong> ${getStockBadge(book.stock)}</p>
+                            </div>
+                            <div class="book-details-price">${formatPrice(book.price)}</div>
+                            <div class="book-details-description">
+                                <h3>Description</h3>
+                                <p>${book.description || 'No description available.'}</p>
+                            </div>
+                            <div class="book-details-actions">
+                                <button class="btn btn-success" 
+                                        onclick="addToCart(${book.id})"
+                                        ${book.stock === 0 ? 'disabled' : ''}>
+                                    <i class="fas fa-shopping-cart"></i> Add to Cart
+                                </button>
+                                <button class="btn btn-outline" onclick="window.history.back()">
+                                    <i class="fas fa-arrow-left"></i> Back
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Load related books from the same category
+                if (book.category) {
+                    loadRelatedBooks(book.category, book.id);
+                }
+            } else {
+                container.innerHTML = '<div class="empty-state"><h3>Book not found</h3></div>';
+            }
+        }
+
+        // Load related books
+        function loadRelatedBooks(category, excludeBookId) {
+            const books = storage.filterByCategory(category);
+            const container = document.getElementById('relatedBooks');
+            
+            if (books && books.length > 0) {
+                // Filter out current book and limit to 4
+                const relatedBooks = books.filter(book => book.id !== excludeBookId).slice(0, 4);
+                
+                if (relatedBooks.length > 0) {
+                    container.innerHTML = relatedBooks.map(book => `
+                        <div class="book-card">
+                            <div class="book-card-image">
+                                <img src="${book.image || 'https://via.placeholder.com/300x400?text=No+Image'}" 
+                                     alt="${book.title}"
+                                     onerror="this.src='https://via.placeholder.com/300x400?text=No+Image'">
+                            </div>
+                            <div class="book-card-content">
+                                <h3 class="book-card-title">
+                                    <a href="book-details.html?id=${book.id}">${book.title}</a>
+                                </h3>
+                                <p class="book-card-author">${book.author}</p>
+                                <div class="book-card-rating">
+                                    <span class="stars">${generateStars(book.rating)}</span>
+                                    <span>${book.rating}</span>
+                                </div>
+                                <div class="book-card-footer">
+                                    <span class="book-card-price">${formatPrice(book.price)}</span>
+                                    ${getStockBadge(book.stock)}
+                                </div>
+                                <button class="btn btn-primary btn-block mt-2" 
+                                        onclick="addToCart(${book.id})"
+                                        ${book.stock === 0 ? 'disabled' : ''}>
+                                    <i class="fas fa-shopping-cart"></i> Add to Cart
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+
+        // Load on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            if (!bookId || isNaN(bookId)) {
+                document.getElementById('bookDetails').innerHTML = '<div class="empty-state"><h3>Invalid book ID</h3></div>';
+            } else {
+                loadBookDetails();
+            }
+        });
+    </script>
+</body>
+</html>

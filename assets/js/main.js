@@ -55,19 +55,10 @@ function showToast(message, type = 'info') {
 /**
  * Update cart count in header
  */
-async function updateCartCount() {
-    try {
-        const response = await fetch(API_ENDPOINTS.cart);
-        const data = await response.json();
-        
-        if (data.success) {
-            const cartCount = document.getElementById('cartCount');
-            if (cartCount) {
-                cartCount.textContent = data.count || 0;
-            }
-        }
-    } catch (error) {
-        console.error('Error updating cart count:', error);
+function updateCartCount() {
+    const cartCount = document.getElementById('cartCount');
+    if (cartCount) {
+        cartCount.textContent = storage.getCartCount();
     }
 }
 
@@ -76,30 +67,14 @@ async function updateCartCount() {
  * @param {number} bookId - Book ID
  * @param {number} quantity - Quantity to add
  */
-async function addToCart(bookId, quantity = 1) {
-    try {
-        const response = await fetch(API_ENDPOINTS.cart, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                book_id: bookId,
-                quantity: quantity
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showToast('Item added to cart!', 'success');
-            updateCartCount();
-        } else {
-            showToast(data.error || 'Failed to add to cart', 'error');
-        }
-    } catch (error) {
-        console.error('Error adding to cart:', error);
-        showToast('Failed to add to cart', 'error');
+function addToCart(bookId, quantity = 1) {
+    const result = storage.addToCart(bookId, quantity);
+    
+    if (result.success) {
+        showToast('Item added to cart!', 'success');
+        updateCartCount();
+    } else {
+        showToast(result.message || 'Failed to add to cart', 'error');
     }
 }
 
